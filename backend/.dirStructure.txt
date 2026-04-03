@@ -1,0 +1,30 @@
+ventasONLine /
+│── backend/
+│   ├── manage.py
+│   ├── Dockerfile
+│   ├── Docker-compose.yml
+│   ├── .dockerignore
+│   ├── core/                          # Configuración principal (settings, urls, wsgi)
+│   │   ├── settings.py
+│   │   └── urls.py                    # Aquí se registran las rutas de todas las apps
+│   ├── apps/                          # Carpeta contenedora (opcional, pero limpia)
+│   │   ├── accounts/                  # Todo lo relativo a User y Address
+│   │   │   ├── models.py
+│   │   │   ├── serializers.py
+│   │   │   ├── views.py
+│   │   │   └── urls.py
+│   │   ├── products/                  # Categorías, Proveedores, Productos e Imágenes
+│   │   │   ├── models.py
+│   │   │   ├── serializers.py
+│   │   │   ├── views.py
+│   │   │   └── urls.py
+│   │   └── sales/                     # Órdenes, OrderItems, Carrito y Pagos
+│   │       ├── models.py
+│   │       ├── serializers.py
+│   │       ├── views.py
+│   │       └── utils.py               # Lógica para procesar pagos (Stripe/Paypal)
+│   ├── media/                         # Carpeta donde se guardarán las fotos de productos
+│   ├── static/                        # Archivos estáticos
+│   └── requirements.txt
+│── frontend/
+└── .git/

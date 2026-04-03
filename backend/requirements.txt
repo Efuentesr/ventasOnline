@@ -1,0 +1,12 @@
+django==5.0
+djangorestframework
+django-cors-headers
+django-filter
+django-simple-history
+djangorestframework-simplejwt
+drf-spectacular
+psycopg2-binary
+django-environ
+psycopg2-binary
+Pillow
+gunicorn
