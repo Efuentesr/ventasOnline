@@ -1,0 +1,33 @@
+npm create vite@latest frontend -- --template react
+cd frontend
+npm install --no-fund    # Instala las dependencias base de Vite
+npm install axios        # Para conectar con Django
+npm install react-router-dom  # Para navegar entre Inicio y Tienda
+npm install lucide-react # Iconos profesionales
+
+# En VS Code, instala la extensión "Tailwind CSS IntelliSense"
+
+# en raiz de frontend tailwind.config.js
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+
+# en raiz de frontend potscss.config.js
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+
+npm install -D tailwindcss postcss autoprefixer
+
+

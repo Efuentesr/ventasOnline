@@ -5,7 +5,7 @@ from .models import Category, Supplier, Product, ProductImage
 # Esto permite subir fotos directamente dentro de la pantalla del Producto
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
-    extra = 1 # Te muestra una casilla vacía lista para subir una foto
+    extra = 4 # Te muestra una casilla vacía lista para subir una foto
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):

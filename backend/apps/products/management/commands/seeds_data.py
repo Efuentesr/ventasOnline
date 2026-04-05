@@ -20,7 +20,7 @@ class Command(BaseCommand):
         nombres_joyas = ["Collar", "Anillo", "Pulsera", "Pendientes", "Dije"]
         materiales = ["Plata .925", "Oro Rosa", "Cuarzo Amatista", "Piedra Luna", "Acero Inoxidable"]
         
-        nombres_scrap = ["Álbum", "Set de Papeles", "Troqueladora", "Pegatinas", "Kit de Iniciación"]
+        nombres_scrap = ["Álbum", "Set de Papeles", "Troqueladora", "Pegatinas","Kit de Iniciación"]
         tematicas = ["Vintage", "Boda", "Viajes", "Bebé", "Botánico"]
 
         # 4. Generar 35 Joyas

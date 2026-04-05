@@ -1,7 +1,7 @@
 from rest_framework import viewsets, filters, permissions
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Product, Category
-from .serializers import ProductListSerializer, CategorySerializer
+from .serializers import ProductListSerializer, CategorySerializer, ProductDetailSerializer
 
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
@@ -19,7 +19,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Product.objects.filter(is_active=True).order_by('-created_at')
     serializer_class = ProductListSerializer
     permission_classes = [permissions.AllowAny]
-    lookup_field = 'slug' # <--- Buscamos por /api/products/collar-plata/
+    #lookup_field = 'slug' # <--- Buscamos por /api/products/collar-plata/
     
     # Motores de búsqueda y filtrado
     filter_backends = [
@@ -40,3 +40,13 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     
     # Opciones de ordenamiento
     ordering_fields = ['price', 'created_at']
+
+    def get_serializer_class(self):
+        """
+        Determina qué serializador usar:
+        - Detalle (retrieve): ProductDetailSerializer (con imágenes)
+        - Lista (list): ProductListSerializer (ligero)
+        """
+        if self.action == 'retrieve':
+            return ProductDetailSerializer
+        return ProductListSerializer

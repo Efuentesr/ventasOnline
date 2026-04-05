@@ -79,7 +79,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20, # Amazon-style pagination
+    'PAGE_SIZE': 70, # Amazon-style pagination
 }
 
 # --- JWT SETTINGS ---

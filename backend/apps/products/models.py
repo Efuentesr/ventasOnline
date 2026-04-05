@@ -61,9 +61,12 @@ class ProductImage(models.Model):
     product = models.ForeignKey(Product, related_name='images', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='products/') # Requiere Pillow instalado
     is_feature = models.BooleanField(default=False) # Foto principal
+    alt_text = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+            return f"Imagen para {self.product.name}"
 
     # history = HistoricalRecords() # Registra cambios en precio y stock
-
 # --- 4. RESEÑAS (REVIEWS) ---
 class Review(models.Model):
     product = models.ForeignKey(Product, related_name='reviews', on_delete=models.CASCADE)
