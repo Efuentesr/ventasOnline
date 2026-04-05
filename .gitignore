@@ -1,0 +1,26 @@
+# --- Node / Frontend (React) ---
+node_modules/
+dist/
+dist-ssr/
+*.local
+.eslintcache
+
+# --- Python / Backend (Django) ---
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv/
+env/
+venv/
+ENV/
+db.sqlite3
+/static/
+/media/
+
+# --- IDEs & System ---
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.log
