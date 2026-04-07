@@ -1,8 +1,8 @@
 from rest_framework import viewsets, filters, permissions
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Product, Category
 from .serializers import ProductListSerializer, CategorySerializer, ProductDetailSerializer
-
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all()
@@ -18,8 +18,8 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = Product.objects.filter(is_active=True).order_by('-created_at')
     serializer_class = ProductListSerializer
-    permission_classes = [permissions.AllowAny]
-    #lookup_field = 'slug' # <--- Buscamos por /api/products/collar-plata/
+    # permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     
     # Motores de búsqueda y filtrado
     filter_backends = [
@@ -36,7 +36,8 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     }
     
     # Barra de búsqueda global
-    search_fields = ['name', 'description', 'category__name']
+    #search_fields = ['name', 'code', 'description', 'category__name']
+    search_fields = ['name', 'code', 'description']
     
     # Opciones de ordenamiento
     ordering_fields = ['price', 'created_at']
@@ -50,3 +51,4 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == 'retrieve':
             return ProductDetailSerializer
         return ProductListSerializer
+    

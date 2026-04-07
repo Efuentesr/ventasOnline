@@ -18,9 +18,9 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(SimpleHistoryAdmin):
-    list_display = ['id', 'user', 'status', 'total_price', 'created_at']
+    list_display = ['id', 'customer', 'status', 'total_price', 'discount', 'created_at']
     list_filter = ['status', 'created_at']
-    search_fields = ['user__username', 'id']
+    search_fields = ['customer__username', 'id']
     inlines = [OrderItemInline]
     
     # Protegemos datos sensibles para que el admin no los edite por error

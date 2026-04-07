@@ -6,12 +6,12 @@ from apps.sales.models import Cart, CartItem
 from apps.products.serializers import ProductListSerializer
 
 class CartItemSerializer(serializers.ModelSerializer):
-    product = ProductListSerializer(read_only=True)
+    product_details = ProductListSerializer(source='product', read_only=True)
     subtotal = serializers.ReadOnlyField()
 
     class Meta:
         model = CartItem
-        fields = ['id', 'product', 'quantity', 'subtotal']
+        fields = ['id', 'product', 'product_details', 'quantity']
 
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
@@ -27,49 +27,66 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = ['id', 'product', 'product_name', 'price', 'quantity']
-        read_only_fields = ['price'] # El cliente no envía el precio, lo toma el server
+        # Importante: El precio se congela en el create del OrderSerializer
+        read_only_fields = ['price']
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
-    user = serializers.ReadOnlyField(source='user.username')
+    customer_name = serializers.ReadOnlyField(source='customer.username')
+    final_price = serializers.ReadOnlyField() # Viene de la @property del modelo
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'address', 'status', 'total_price', 'items', 'created_at']
-        read_only_fields = ['total_price', 'status']
+        # Corregido: 'user' cambiado a 'customer' y 'customer_name' añadido
+        fields = [
+            'id', 'customer', 'customer_name', 'status', 'items',
+            'discount', 'total_price', 'final_price', 
+            'created_at', 'updated_at'
+        ]
+        # El cliente no debería poder manipular estos campos al crear
+        read_only_fields = ['customer', 'status', 'total_price', 'discount']
+
 
     @transaction.atomic
     def create(self, validated_data):
-        items_data = validated_data.pop('items')
-        user = self.context['request'].user
-        
-        # 1. Crear la cabecera de la orden (precio inicial 0)
-        order = Order.objects.create(user=user, total_price=0, **validated_data)
-        
-        total = 0
-        for item in items_data:
-            product = item['product']
-            qty = item['quantity']
-
-            # 2. Validar Stock
-            if product.stock < qty:
-                raise serializers.ValidationError(f"Stock insuficiente para {product.name}")
-
-            # 3. Congelar precio y descontar stock
-            price_at_purchase = product.price
-            OrderItem.objects.create(
-                order=order,
-                product=product,
-                quantity=qty,
-                price=price_at_purchase
+        try:
+            items_data = validated_data.pop('items')
+            request_user = self.context['request'].user
+            
+            # 1. Crear la cabecera
+            order = Order.objects.create(
+                customer=request_user,
+                total_price=0,
+                status='creada'
             )
             
-            product.stock -= qty
-            product.save()
-            
-            total += price_at_purchase * qty
+            total = 0
+            for item in items_data:
+                product = item['product']
+                qty = item['quantity']
 
-        # 4. Actualizar total final de la orden
-        order.total_price = total
-        order.save()
-        return order
+                # Validar Stock
+                if product.stock < qty:
+                    raise Exception(f"Stock insuficiente para {product.name}")
+
+                # 3. Crear el detalle y descontar stock
+                OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    quantity=qty,
+                    price=product.price
+                )
+                
+                product.stock -= qty
+                product.save()
+                
+                total += (product.price * qty)
+
+            # 4. Actualizar total final
+            order.total_price = total
+            order.save()
+            return order
+
+        except Exception as e:
+            # Esto convertirá el error 500 en un error 400 con el mensaje real
+            raise serializers.ValidationError({"debug_error": str(e)})
