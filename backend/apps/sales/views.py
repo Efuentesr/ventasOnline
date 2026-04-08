@@ -1,3 +1,5 @@
+#app/sales/views.py
+
 from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -23,7 +25,9 @@ class CartViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
-
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['status']
+    
     def get_queryset(self):
         user = self.request.user
         if user.is_staff:
@@ -42,6 +46,12 @@ class OrderViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
         return super().partial_update(request, *args, **kwargs)
+    
+    def perform_create(self, serializer):
+        # ESTO es lo que evita el error 400. 
+        # Django toma el usuario del token y lo inyecta antes de guardar.
+        serializer.save(customer=self.request.user)
+    
 
 
 class SyncCartView(APIView):

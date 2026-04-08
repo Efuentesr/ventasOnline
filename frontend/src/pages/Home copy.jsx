@@ -12,33 +12,33 @@ function Home() { // Cambié App por Home para ser consistentes
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Ahora enviamos página Y búsqueda a la API
-        const res = await api.get(`/products/items/?page=${page}&search=${search}`);
-        
-        const data = res.data.results || res.data;
+    setLoading(true);
+    // Agregamos el parámetro ?page= a la consulta
+    api.get(`/products/items/?page=${page}`)
+      .then(res => {
+        // Django devuelve res.data.results cuando hay paginación
+        const data = res.data.results || res.data; 
         setProducts(data);
-  
+        
+        // Calculamos total de páginas (asumiendo PAGE_SIZE: 12 en Django)
         if (res.data.count) {
           setTotalPages(Math.ceil(res.data.count / 12));
         }
-        window.scrollTo(0, 0);
-      } catch (err) {
-        console.error("Error:", err);
-      } finally {
         setLoading(false);
-      }
-    };
-  
-    // Debounce: Espera 400ms después de que el usuario deja de escribir
-    const timeoutId = setTimeout(() => {
-      fetchData();
-    }, 400);
-    return () => clearTimeout(timeoutId); // Limpia el timer si el usuario sigue escribiendo
-   
-  }, [page, search]); // Se dispara cuando cambia la página O el texto de búsqueda
+        window.scrollTo(0, 0); // Sube al inicio al cambiar de página
+      })
+      .catch(err => {
+        console.error("Error:", err);
+        setLoading(false);
+      });
+  }, [page]); // Se ejecuta cada vez que cambia la página
+
+  const filteredProducts = products.filter(p => {
+    const name = p.name ? p.name.toLowerCase() : '';
+    const code = p.code ? p.code.toLowerCase() : '';
+    const searchTerm = search.toLowerCase();
+    return name.includes(searchTerm) || code.includes(searchTerm);
+  });
 
   return (
     <div className="p-10 bg-gray-100 min-h-screen">
@@ -47,19 +47,12 @@ function Home() { // Cambié App por Home para ser consistentes
       </h1>
 
       <div className="max-w-md mx-auto mb-10">
-
         <input 
           type="text"
-          value={search} // Asegúrate de tener el valor vinculado
-          placeholder="Busca en todo el catálogo..."
+          placeholder="Busca en esta página..."
           className="w-full px-5 py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm"
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1); // <--- IMPORTANTE: Resetea a la página 1 al buscar
-          }}
+          onChange={(e) => setSearch(e.target.value)}
         />
-
-
       </div>
       
       {loading ? (
@@ -67,7 +60,7 @@ function Home() { // Cambié App por Home para ser consistentes
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map(product => (
+            {filteredProducts.map(product => (
               <div key={product.id} className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col">
                 <img 
                   src={product.main_image || 'https://placehold.co/400x400?text=Sin+Foto'} 

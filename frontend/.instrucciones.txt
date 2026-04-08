@@ -31,3 +31,11 @@ export default {
 npm install -D tailwindcss postcss autoprefixer
 
 
+
+Estado Actual	Acción	¿Quién puede?	Resultado
+Creado	Aprobar	Solo Cliente	Aprobada
+Creado	Anular	Cliente o Admin	Anulada
+Aprobado	Pagar	Solo Admin	Pagada
+Aprobado	Anular	Solo Admin	Anulada
+Pagada	(Cualquiera)	Nadie	Bloqueado
+

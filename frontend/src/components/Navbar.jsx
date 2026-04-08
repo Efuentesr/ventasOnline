@@ -1,55 +1,75 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext'; // Importamos el contexto que crearemos
+import { useAuth } from '../context/AuthContext'; // Importamos el hook de auth
+import { useCart } from '../context/CartContext'; // Para mostrar cuántos items hay
 
 const Navbar = () => {
-  const { cartCount } = useCart();
+  const { user, logout } = useAuth(); // Sacamos los datos del usuario y la función logout
+  const { cart } = useCart();
 
   return (
-    <nav className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20 items-center">
-          
-          {/* LOGO */}
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl font-black tracking-tighter text-gray-900">
-              ART<span className="text-indigo-600">STORE</span>
-            </span>
+    <nav className="bg-white shadow-md p-4 sticky top-0 z-50">
+      <div className="container mx-auto flex justify-between items-center">
+        
+        {/* Logo */}
+        <Link to="/" className="text-2xl font-black text-indigo-600 tracking-tighter">
+          ARTESA<span className="text-gray-900">&SCRAP</span>
+        </Link>
+
+        {/* Links de navegación */}
+        <div className="flex items-center gap-6">
+          <Link to="/" className="text-gray-600 hover:text-indigo-600 font-medium">
+            Catálogo
           </Link>
 
-          {/* NAVEGACIÓN CENTRAL (Opcional) */}
-          <div className="hidden md:flex space-x-8">
-            <Link to="/" className="text-gray-500 hover:text-indigo-600 font-medium transition-colors">Catálogo</Link>
-            <Link to="/?category=scrapbooking" className="text-gray-500 hover:text-indigo-600 font-medium transition-colors">Scrapbooking</Link>
-          </div>
+          <Link to="/cart" className="relative text-gray-600 hover:text-indigo-600 font-medium">
+            Carrito
+            {cart.length > 0 && (
+              <span className="absolute -top-2 -right-3 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {cart.length}
+              </span>
+            )}
+          </Link>
 
-          {/* ICONOS DERECHA */}
-          <div className="flex items-center gap-5">
-            {/* CARRITO */}
-            <Link to="/cart" className="relative group p-2 rounded-full hover:bg-gray-50 transition-all">
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                className="h-7 w-7 text-gray-700 group-hover:text-indigo-600" 
-                fill="none" viewBox="0 0 24 24" stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 118 0m-4 8l2-2m0 0l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-
-              {/* Burbuja del contador */}
-              {cartCount > 0 && (
-                <span className="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full border-2 border-white animate-in zoom-in duration-300">
-                  {cartCount}
-                </span>
-              )}
+          {user ? (
+            // Si el usuario ESTÁ logueado
+            <>
+            <Link 
+              to="/orders" className="relative text-gray-600 hover:text-indigo-600 font-medium">
+              Ordenes
             </Link>
+            </>
+          ) : (
+            // Si el usuario NO está logueado
+            <></>
+          )}
 
-            {/* BOTÓN PERFIL (Opcional) */}
-            <button className="hidden sm:block bg-gray-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-600 transition-all">
-              Mi Cuenta
-            </button>
+
+          {/* --- LÓGICA DE LOGIN / LOGOUT --- */}
+          <div className="border-l pl-6 flex items-center gap-4">
+            {user ? (
+              // Si el usuario ESTÁ logueado
+              <>
+                <span className="text-sm text-gray-500 hidden md:block">
+                  ¡Hola, <span className="font-bold text-gray-800">Artesano</span>!
+                </span>
+                <button 
+                  onClick={logout}
+                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-200 transition"
+                >
+                  Salir
+                </button>
+              </>
+            ) : (
+              // Si el usuario NO está logueado
+              <Link 
+                to="/login" 
+                className="bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition shadow-md shadow-indigo-100"
+              >
+                Iniciar Sesión
+              </Link>
+            )}
           </div>
-
         </div>
       </div>
     </nav>

@@ -1,9 +1,12 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
-import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; // Importamos el hook de auth
+import { Link, useNavigate } from 'react-router-dom';
 
 const CartPage = () => {
-  const { cart, cartTotal, removeFromCart, clearCart, updateQuantity } = useCart();
+  const { user } = useAuth();
+  const { cart, cartTotal, removeFromCart, clearCart, updateQuantity, createOrder } = useCart();
+  const navigate = useNavigate();
 
   if (cart.length === 0) {
     return (
@@ -13,6 +16,19 @@ const CartPage = () => {
       </div>
     );
   }
+
+  const handleCheckout = async () => {
+    if (cart.length === 0) return;
+
+    const result = await createOrder();
+    
+    if (result.success) {
+      alert(`¡Pedido #${result.orderId} creado con éxito!`);
+      navigate('/orders'); // Redirigimos a la lista de pedidos que hicimos antes
+    } else {
+      alert(`Error: ${result.error}`);
+    }
+  };
 
   return (
     <div className="p-10 max-w-4xl mx-auto">
@@ -90,9 +106,30 @@ const CartPage = () => {
           <div className="text-right">
             <p className="text-gray-500">Total a pagar:</p>
             <p className="text-4xl font-black text-indigo-600">${cartTotal.toFixed(2)}</p>
-            <button className="mt-4 bg-gray-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-600 transition-all w-full">
-              Finalizar Compra
-            </button>
+
+
+            {user ? (
+              <button 
+                onClick={handleCheckout}
+                className="mt-4 bg-gray-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-600 transition-all w-full"
+              >
+                Confirmar Pedido
+              </button>
+            ) : (
+              <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl mt-4">
+                <p className="text-amber-700 text-sm mb-3">
+                  <strong> Para finalizar tu compra, por favor inicia sesión. </strong>
+                </p>
+                {/*}
+                <Link to="/login" className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold inline-block">
+                  Ir al Login
+                </Link>
+                */}
+              </div>
+            )}
+
+
+
           </div>
         </div>
       </div>

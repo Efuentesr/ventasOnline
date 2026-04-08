@@ -8,10 +8,16 @@ const api = axios.create({
 // Este interceptor pega el Token en cada petición si existe
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('access_token');
-    if (token) {
+    
+    // Solo añadir el header si el token existe de verdad
+    if (token && token !== 'undefined' && token !== 'null') {
         config.headers.Authorization = `Bearer ${token}`;
+    } else {
+        // MUY IMPORTANTE: Eliminar el header si no hay token
+        delete config.headers.Authorization;
     }
     return config;
+}, (error) => {
+    return Promise.reject(error);
 });
-
 export default api;

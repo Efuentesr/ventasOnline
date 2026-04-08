@@ -4,6 +4,7 @@ from .models import Order, OrderItem
 from apps.sales.models import Cart, CartItem
 #from apps.products.models import Product
 from apps.products.serializers import ProductListSerializer
+from decimal import Decimal
 
 class CartItemSerializer(serializers.ModelSerializer):
     product_details = ProductListSerializer(source='product', read_only=True)
@@ -33,43 +34,41 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
     customer_name = serializers.ReadOnlyField(source='customer.username')
-    final_price = serializers.ReadOnlyField() # Viene de la @property del modelo
+    final_price = serializers.ReadOnlyField()
 
     class Meta:
         model = Order
-        # Corregido: 'user' cambiado a 'customer' y 'customer_name' añadido
         fields = [
             'id', 'customer', 'customer_name', 'status', 'items',
             'discount', 'total_price', 'final_price', 
             'created_at', 'updated_at'
         ]
-        # El cliente no debería poder manipular estos campos al crear
-        read_only_fields = ['customer', 'status', 'total_price', 'discount']
-
+        # AGREGAMOS 'customer' aquí abajo:
+        read_only_fields = ['customer', 'customer_name', 'status', 'total_price', 'final_price', 'created_at']
 
     @transaction.atomic
     def create(self, validated_data):
         try:
+            # validated_data ya no intentará buscar 'customer' porque es read_only
             items_data = validated_data.pop('items')
             request_user = self.context['request'].user
             
-            # 1. Crear la cabecera
+            # 1. Crear la cabecera usando el usuario del request
             order = Order.objects.create(
                 customer=request_user,
                 total_price=0,
+                discount=validated_data.get('discount', 0), # Capturamos el descuento si viene
                 status='creada'
             )
             
-            total = 0
+            total = Decimal('0.00') # Usamos Decimal para evitar errores de precisión
             for item in items_data:
                 product = item['product']
                 qty = item['quantity']
 
-                # Validar Stock
                 if product.stock < qty:
-                    raise Exception(f"Stock insuficiente para {product.name}")
+                    raise serializers.ValidationError(f"Stock insuficiente para {product.name}")
 
-                # 3. Crear el detalle y descontar stock
                 OrderItem.objects.create(
                     order=order,
                     product=product,
@@ -82,11 +81,9 @@ class OrderSerializer(serializers.ModelSerializer):
                 
                 total += (product.price * qty)
 
-            # 4. Actualizar total final
             order.total_price = total
             order.save()
             return order
 
         except Exception as e:
-            # Esto convertirá el error 500 en un error 400 con el mensaje real
-            raise serializers.ValidationError({"debug_error": str(e)})
+            raise serializers.ValidationError({"error": str(e)})
